@@ -75,7 +75,7 @@ jobs:
           echo "apksigner=" >> $GITHUB_OUTPUT
 
       - name: Sign APK with apksigner (if available)
-        if: steps.find-apksigner.outputs.apksigner != ''
+        if: ${{ steps.find-apksigner.outputs.apksigner != '' }}
         run: |
           set -e
           echo "Using apksigner: ${{ steps.find-apksigner.outputs.apksigner }}"
@@ -100,7 +100,7 @@ jobs:
 
       - name: Upload artifact: signed-apks
         uses: actions/upload-artifact@v4
-        if: always()
+        if: ${{ always() }}
         with:
           name: signed-apks-${{ github.sha }}
           path: signed_apks
