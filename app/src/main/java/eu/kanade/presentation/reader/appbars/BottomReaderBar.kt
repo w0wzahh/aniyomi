@@ -31,6 +31,11 @@ fun BottomReaderBar(
     cropEnabled: Boolean,
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
+    isAutoScrolling: Boolean = false,
+    speed: Int = 4,
+    onToggleAutoScroll: () -> Unit = {},
+    onIncreaseSpeed: () -> Unit = {},
+    onDecreaseSpeed: () -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -67,5 +72,22 @@ fun BottomReaderBar(
                 contentDescription = stringResource(MR.strings.action_settings),
             )
         }
+        IconButton(onClick = onDecreaseSpeed) {
+            androidx.compose.material3.Text("-")
+        }
+
+        IconButton(onClick = onToggleAutoScroll) {
+            if (isAutoScrolling) {
+                Icon(painter = painterResource(R.drawable.ic_pause_24dp), contentDescription = "Stop")
+            } else {
+                Icon(painter = painterResource(R.drawable.ic_play_arrow_24dp), contentDescription = "Play")
+            }
+        }
+
+        IconButton(onClick = onIncreaseSpeed) {
+            androidx.compose.material3.Text("+")
+        }
+
+        androidx.compose.material3.Text(text = "$speed")
     }
 }

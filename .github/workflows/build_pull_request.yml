@@ -48,6 +48,63 @@ jobs:
       - name: Build app
         run: ./gradlew assembleRelease
 
+      - name: Create debug keystore (for test signing)
+        run: |
+          keytool -genkeypair -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -keystore debug.keystore -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Locate apksigner
+        id: find-apksigner
+        run: |
+          set -e
+          # try common SDK locations
+          CANDIDATES=("$ANDROID_SDK_ROOT" "$HOME/Android/Sdk" "/usr/local/android-sdk")
+          for d in "${CANDIDATES[@]}"; do
+            if [ -n "$d" ] && [ -d "$d/build-tools" ]; then
+              ver=$(ls "$d/build-tools" | sort -V | tail -n1)
+              if [ -f "$d/build-tools/$ver/apksigner" ]; then
+                echo "apksigner=$d/build-tools/$ver/apksigner" >> $GITHUB_OUTPUT
+                exit 0
+              fi
+            fi
+          done
+          # fallback to searching PATH
+          if command -v apksigner >/dev/null 2>&1; then
+            echo "apksigner=$(command -v apksigner)" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "apksigner=" >> $GITHUB_OUTPUT
+
+      - name: Sign APK with apksigner (if available)
+        if: ${{ steps.find-apksigner.outputs.apksigner != '' }}
+        run: |
+          set -e
+          echo "Using apksigner: ${{ steps.find-apksigner.outputs.apksigner }}"
+          unsigned=$(find app/build/outputs -type f -name "*-unsigned.apk" | head -n1)
+          if [ -z "$unsigned" ]; then
+            echo "No unsigned APK found to sign"; exit 0
+          fi
+          echo "Signing $unsigned"
+          "${{ steps.find-apksigner.outputs.apksigner }}" sign --ks debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android "$unsigned"
+
+      - name: Collect signed APKs (if present)
+        run: |
+          set -e
+          mkdir -p signed_apks
+          find app/build/outputs -type f -name "*-unsigned.apk" -print0 | while IFS= read -r -d '' apk; do
+            if [ -f "$apk" ]; then
+              echo "Copying $apk"
+              cp "$apk" signed_apks/
+            fi
+          done
+        shell: bash
+
+      - name: 'Upload artifact: signed-apks'
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: signed-apks-${{ github.sha }}
+          path: signed_apks
+
       - name: Run unit tests
         run: ./gradlew testReleaseUnitTest
 

@@ -65,6 +65,11 @@ fun ReaderAppBars(
     cropEnabled: Boolean,
     onClickCropBorder: () -> Unit,
     onClickSettings: () -> Unit,
+    isAutoScrolling: Boolean = false,
+    autoScrollSpeed: Int = 4,
+    onToggleAutoScroll: () -> Unit = {},
+    onIncreaseAutoScrollSpeed: () -> Unit = {},
+    onDecreaseAutoScrollSpeed: () -> Unit = {},
 ) {
     val isRtl = viewer is R2LPagerViewer
     val backgroundColor = MaterialTheme.colorScheme
@@ -187,6 +192,11 @@ fun ReaderAppBars(
                     cropEnabled = cropEnabled,
                     onClickCropBorder = onClickCropBorder,
                     onClickSettings = onClickSettings,
+                    isAutoScrolling = isAutoScrolling,
+                    speed = autoScrollSpeed,
+                    onToggleAutoScroll = onToggleAutoScroll,
+                    onIncreaseSpeed = onIncreaseAutoScrollSpeed,
+                    onDecreaseSpeed = onDecreaseAutoScrollSpeed,
                 )
             }
         }
