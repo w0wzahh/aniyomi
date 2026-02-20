@@ -88,6 +88,6 @@ fun BottomReaderBar(
             androidx.compose.material3.Text("+")
         }
 
-        androidx.compose.material3.Text(text = "${speed}")
+        androidx.compose.material3.Text(text = "$speed")
     }
 }

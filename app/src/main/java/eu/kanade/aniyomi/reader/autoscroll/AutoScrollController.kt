@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
  */
 class AutoScrollController(
     private val recycler: RecyclerView,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main),
 ) {
     private var job: Job? = null
     private var speedPxPerFrame = 4

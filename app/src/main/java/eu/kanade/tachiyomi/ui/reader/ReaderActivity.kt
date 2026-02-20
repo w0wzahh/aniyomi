@@ -43,6 +43,7 @@ import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
 import com.hippo.unifile.UniFile
 import dev.chrisbanes.insetter.applyInsetter
+import eu.kanade.aniyomi.reader.autoscroll.AutoScrollController
 import eu.kanade.core.util.ifMangaSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.presentation.reader.DisplayRefreshHost
@@ -73,6 +74,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsScreenModel
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingMode
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.ui.webview.WebViewActivity
 import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import eu.kanade.tachiyomi.util.system.isNightMode
@@ -100,8 +102,6 @@ import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.ByteArrayOutputStream
-import eu.kanade.aniyomi.reader.autoscroll.AutoScrollController
-import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 
 class ReaderActivity : BaseActivity() {
 
@@ -457,11 +457,23 @@ class ReaderActivity : BaseActivity() {
                     when {
                         rctrl != null -> {
                             if (rctrl.isRunning()) {
-                                rctrl.stop(); toast("Auto-scroll stopped")
-                            } else { rctrl.setSpeedPxPerFrame(autoScrollSpeed); rctrl.start(); toast("Auto-scroll started") }
+                                rctrl.stop()
+                                toast("Auto-scroll stopped")
+                            } else {
+                                rctrl.setSpeedPxPerFrame(autoScrollSpeed)
+                                rctrl.start()
+                                toast("Auto-scroll started")
+                            }
                         }
                         pctrl != null -> {
-                            if (pctrl.isRunning()) { pctrl.stop(); toast("Auto-scroll stopped") } else { pctrl.setSpeed(autoScrollSpeed); pctrl.start(); toast("Auto-scroll started") }
+                            if (pctrl.isRunning()) {
+                                pctrl.stop()
+                                toast("Auto-scroll stopped")
+                            } else {
+                                pctrl.setSpeed(autoScrollSpeed)
+                                pctrl.start()
+                                toast("Auto-scroll started")
+                            }
                         }
                         else -> toast("Auto-scroll not available for this viewer")
                     }
@@ -617,7 +629,8 @@ class ReaderActivity : BaseActivity() {
             pagerAutoScrollController = null
         } else if (newViewer is eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer) {
             try {
-                pagerAutoScrollController = eu.kanade.aniyomi.reader.autoscroll.PagerAutoScrollController(newViewer, lifecycleScope)
+                pagerAutoScrollController =
+                    eu.kanade.aniyomi.reader.autoscroll.PagerAutoScrollController(newViewer, lifecycleScope)
             } catch (_: Exception) {
                 pagerAutoScrollController = null
             }

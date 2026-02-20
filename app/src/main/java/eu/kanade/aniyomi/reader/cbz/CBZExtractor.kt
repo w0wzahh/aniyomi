@@ -40,6 +40,10 @@ object CBZExtractor {
 
     private fun isImageName(name: String): Boolean {
         val n = name.lowercase()
-        return n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".png") || n.endsWith(".webp") || n.endsWith(".bmp")
+        return n.endsWith(".jpg") ||
+            n.endsWith(".jpeg") ||
+            n.endsWith(".png") ||
+            n.endsWith(".webp") ||
+            n.endsWith(".bmp")
     }
 }

@@ -1,12 +1,12 @@
 package eu.kanade.aniyomi.reader.autoscroll
 
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 
 /**
  * Simple pager auto-scroll controller that advances pages on a ViewPager-based viewer.
