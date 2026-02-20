@@ -39,6 +39,15 @@ Discover and watch anime, cartoons, series, and more – easier than ever on you
 
 </div>
 
+## New features
+
+The project now includes an experimental auto-scroll reader and basic CBZ archive support available in the `feat/cbz-autoscroll` branch:
+
+- Auto-scroll reader with start/pause and speed controls for hands-free reading (works with webtoon and pager viewers).
+- Basic CBZ (ZIP) archive extraction for loading local comic/manga archives.
+
+These are experimental additions — try the `feat/cbz-autoscroll` branch and report any issues.
+
 ## Contributing
 
 [Code of conduct](./CODE_OF_CONDUCT.md) · [Contributing guide](./CONTRIBUTING.md)
