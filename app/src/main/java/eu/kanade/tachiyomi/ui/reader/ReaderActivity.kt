@@ -100,6 +100,8 @@ import tachiyomi.presentation.core.util.collectAsState
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.ByteArrayOutputStream
+import eu.kanade.aniyomi.reader.autoscroll.AutoScrollController
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 
 class ReaderActivity : BaseActivity() {
 
@@ -138,6 +140,10 @@ class ReaderActivity : BaseActivity() {
 
     var isScrollingThroughPages = false
         private set
+
+    private var autoScrollController: AutoScrollController? = null
+    private var autoScrollSpeed: Int = 4
+    private var pagerAutoScrollController: eu.kanade.aniyomi.reader.autoscroll.PagerAutoScrollController? = null
 
     /**
      * Called when the activity is created. Initializes the presenter and configuration.
@@ -312,6 +318,21 @@ class ReaderActivity : BaseActivity() {
         } else if (keyCode == KeyEvent.KEYCODE_P) {
             loadPreviousChapter()
             return true
+        } else if (keyCode == KeyEvent.KEYCODE_A) {
+            val controller = autoScrollController
+            if (controller == null) {
+                toast("Auto-scroll not available for this viewer")
+                return true
+            }
+            if (controller.isRunning()) {
+                controller.stop()
+                toast("Auto-scroll stopped")
+            } else {
+                controller.setSpeedPxPerFrame(4)
+                controller.start()
+                toast("Auto-scroll started")
+            }
+            return true
         }
         return super.onKeyUp(keyCode, event)
     }
@@ -428,6 +449,35 @@ class ReaderActivity : BaseActivity() {
                     menuToggleToast = toast(if (enabled) MR.strings.on else MR.strings.off)
                 },
                 onClickSettings = viewModel::openSettingsDialog,
+                isAutoScrolling = autoScrollController?.isRunning() == true,
+                autoScrollSpeed = autoScrollSpeed,
+                onToggleAutoScroll = {
+                    val rctrl = autoScrollController
+                    val pctrl = pagerAutoScrollController
+                    when {
+                        rctrl != null -> {
+                            if (rctrl.isRunning()) {
+                                rctrl.stop(); toast("Auto-scroll stopped")
+                            } else { rctrl.setSpeedPxPerFrame(autoScrollSpeed); rctrl.start(); toast("Auto-scroll started") }
+                        }
+                        pctrl != null -> {
+                            if (pctrl.isRunning()) { pctrl.stop(); toast("Auto-scroll stopped") } else { pctrl.setSpeed(autoScrollSpeed); pctrl.start(); toast("Auto-scroll started") }
+                        }
+                        else -> toast("Auto-scroll not available for this viewer")
+                    }
+                },
+                onIncreaseAutoScrollSpeed = {
+                    autoScrollSpeed = (autoScrollSpeed + 1).coerceAtMost(50)
+                    autoScrollController?.setSpeedPxPerFrame(autoScrollSpeed)
+                    pagerAutoScrollController?.setSpeed(autoScrollSpeed)
+                    toast("Speed: $autoScrollSpeed")
+                },
+                onDecreaseAutoScrollSpeed = {
+                    autoScrollSpeed = (autoScrollSpeed - 1).coerceAtLeast(1)
+                    autoScrollController?.setSpeedPxPerFrame(autoScrollSpeed)
+                    pagerAutoScrollController?.setSpeed(autoScrollSpeed)
+                    toast("Speed: $autoScrollSpeed")
+                },
             )
 
             if (flashOnPageChange) {
@@ -547,10 +597,37 @@ class ReaderActivity : BaseActivity() {
         if (prevViewer != null) {
             prevViewer.destroy()
             binding.viewerContainer.removeAllViews()
+            autoScrollController?.stop()
+            autoScrollController = null
+            pagerAutoScrollController?.stop()
+            pagerAutoScrollController = null
         }
         viewModel.onViewerLoaded(newViewer)
         updateViewerInset(readerPreferences.fullscreen().get())
         binding.viewerContainer.addView(newViewer.getView())
+
+        // If this is the webtoon (recycler) viewer, attach the auto-scroll controller
+        if (newViewer is WebtoonViewer) {
+            try {
+                autoScrollController = AutoScrollController(newViewer.recycler, lifecycleScope)
+            } catch (_: Exception) {
+                autoScrollController = null
+            }
+            pagerAutoScrollController?.stop()
+            pagerAutoScrollController = null
+        } else if (newViewer is eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer) {
+            try {
+                pagerAutoScrollController = eu.kanade.aniyomi.reader.autoscroll.PagerAutoScrollController(newViewer, lifecycleScope)
+            } catch (_: Exception) {
+                pagerAutoScrollController = null
+            }
+            autoScrollController?.stop()
+            autoScrollController = null
+        } else {
+            autoScrollController = null
+            pagerAutoScrollController?.stop()
+            pagerAutoScrollController = null
+        }
 
         if (readerPreferences.showReadingMode().get()) {
             showReadingModeToast(viewModel.getMangaReadingMode())
