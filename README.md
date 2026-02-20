@@ -39,6 +39,15 @@ Discover and watch anime, cartoons, series, and more – easier than ever on you
 
 </div>
 
+## Experimental features (this branch)
+
+This branch adds experimental reader features for testing purposes:
+
+- **Auto-scroll reader**: start/pause auto-scrolling with speed controls. Works with the webtoon (RecyclerView) and pager viewers for hands-free reading.
+- **CBZ (ZIP) archive support**: basic CBZ extraction to load local comic/manga archives.
+
+These features are new and may be experimental; please test and report issues on the branch `feat/cbz-autoscroll`.
+
 ## Contributing
 
 [Code of conduct](./CODE_OF_CONDUCT.md) · [Contributing guide](./CONTRIBUTING.md)
