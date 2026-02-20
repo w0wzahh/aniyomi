@@ -86,24 +86,24 @@ jobs:
           echo "Signing $unsigned"
           "${{ steps.find-apksigner.outputs.apksigner }}" sign --ks debug.keystore --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android "$unsigned"
 
-      - name: Upload signed APK (if present)
+      - name: Collect signed APKs (if present)
         run: |
           set -e
-          signed=$(find app/build/outputs -type f -name "*-unsigned.apk" | head -n1)
-          if [ -n "$signed" ]; then
-            echo "Uploading $signed"
-            echo "$signed" > signed-path.txt
-          else
-            echo "No APK found to upload"; exit 0
-          fi
+          mkdir -p signed_apks
+          find app/build/outputs -type f -name "*-unsigned.apk" -print0 | while IFS= read -r -d '' apk; do
+            if [ -f "$apk" ]; then
+              echo "Copying $apk"
+              cp "$apk" signed_apks/
+            fi
+          done
         shell: bash
 
-      - name: 'Upload artifact: signed-apk'
+      - name: Upload artifact: signed-apks
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: signed-apk-${{ github.sha }}
-          path: signed-path.txt
+          name: signed-apks-${{ github.sha }}
+          path: signed_apks
 
       - name: Run unit tests
         run: ./gradlew testReleaseUnitTest
